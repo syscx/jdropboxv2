@@ -1,8 +1,12 @@
 package dropbox;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.Locale;
 import java.util.TimerTask;
+import java.util.Vector;
 
 import com.dropbox.core.DbxAppInfo;
 import com.dropbox.core.DbxClient;
@@ -15,8 +19,10 @@ import com.dropbox.core.DbxWriteMode;
 public class schetimer extends TimerTask{
 	@Override
 	public void run() {
+		Vector<String> homedirectory = readconf();
+		
 		System.out.println("do checker");
-		File folder = new File("/home/ubuntu/");
+		File folder = new File(homedirectory.elementAt(0));
 		File[] listOfFiles = folder.listFiles(); 
 		String files;
 		
@@ -29,22 +35,52 @@ public class schetimer extends TimerTask{
 				if(files.startsWith("20"))
 				{
 					System.out.println("I think I should do the dir "+files);
-					docheckdir(files);
+					docheckdir(files,homedirectory.elementAt(1),homedirectory.elementAt(2),homedirectory.elementAt(3));
 				}
 
 		    }
 		}
 	}
+	
+	public Vector<String> readconf()
+	{
+		BufferedReader br = null;
+		Vector<String> vs = new Vector<String>();
+		 
+		try {
+ 
+			String sCurrentLine;
+ 
+			br = new BufferedReader(new FileReader("jdropconf.txt"));
+ 
+			while ((sCurrentLine = br.readLine()) != null) {
+				vs.add(sCurrentLine);
+				System.out.println("The conf file = "+sCurrentLine);
+			}
+ 
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (br != null)br.close();
+			} catch (IOException ex) {
+				ex.printStackTrace();
+			}
+		}
+		return vs;
+		
+	}
+	
 
-	public void docheckdir(String boxdir)
+	public void docheckdir(String boxdir,String appkey,String APPSECRET,String tokenacc)
 	{
 		String files;
 		File folder = new File(boxdir);
 		File[] listOfFiles = folder.listFiles(); 
 		 
 		// Get your app key and secret from the Dropbox developers website.
-		final String APP_KEY = "dvidf5q47hopcb4";
-		final String APP_SECRET = "9xz1hsg966ksm9z";
+		final String APP_KEY = appkey;
+		final String APP_SECRET = APPSECRET;
 		
 		DbxAppInfo appInfo = new DbxAppInfo(APP_KEY, APP_SECRET);
 		
@@ -65,7 +101,7 @@ public class schetimer extends TimerTask{
 			// This will fail if the user enters an invalid authorization code.
 			//  DbxAuthFinish authFinish = webAuth.finish(code);
 			//String accessToken = authFinish.accessToken;
-			String accessToken = "La3WRuWi5LgAAAAAAAA1bkGiJOkOojIdFGi0d4ZCZzsp-gPKCag9647i0YgWB0i4";
+			String accessToken = tokenacc;
 	
 			DbxClient client = new DbxClient(config, accessToken);
 	
