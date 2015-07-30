@@ -11,6 +11,7 @@ import java.util.Vector;
 import com.dropbox.core.DbxAppInfo;
 import com.dropbox.core.DbxClient;
 import com.dropbox.core.DbxEntry;
+import com.dropbox.core.DbxException;
 import com.dropbox.core.DbxRequestConfig;
 import com.dropbox.core.DbxWebAuthNoRedirect;
 import com.dropbox.core.DbxWriteMode;
@@ -25,6 +26,22 @@ public class schetimer extends TimerTask{
 		File folder = new File(homedirectory.elementAt(0));
 		File[] listOfFiles = folder.listFiles(); 
 		String files;
+
+		DbxAppInfo appInfo = new DbxAppInfo(homedirectory.elementAt(1),homedirectory.elementAt(2));
+		
+		DbxRequestConfig config = new DbxRequestConfig("JavaTutorial/1.0",Locale.getDefault().toString());
+		DbxWebAuthNoRedirect webAuth = new DbxWebAuthNoRedirect(config, appInfo);
+		
+		String authorizeUrl = webAuth.start();		
+
+		String accessToken = homedirectory.elementAt(3);
+		DbxClient client = new DbxClient(config, accessToken);
+		try {
+			System.out.println("Linked account: " + client.getAccountInfo().displayName);
+		} catch (DbxException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		for (int i = 0; i < listOfFiles.length; i++) 
 		{
@@ -35,7 +52,8 @@ public class schetimer extends TimerTask{
 				if(files.startsWith("20"))
 				{
 					System.out.println("I think I should do the dir "+files);
-					docheckdir(files,homedirectory.elementAt(1),homedirectory.elementAt(2),homedirectory.elementAt(3));
+
+					docheckdir(files, client);
 				}
 
 		    }
@@ -72,41 +90,16 @@ public class schetimer extends TimerTask{
 	}
 	
 
-	public void docheckdir(String boxdir,String appkey,String APPSECRET,String tokenacc)
+	public void docheckdir(String boxdir,DbxClient client)
 	{
 		String files;
 		File folder = new File(boxdir);
 		File[] listOfFiles = folder.listFiles(); 
 		 
-		// Get your app key and secret from the Dropbox developers website.
-		final String APP_KEY = appkey;
-		final String APP_SECRET = APPSECRET;
-		
-		DbxAppInfo appInfo = new DbxAppInfo(APP_KEY, APP_SECRET);
-		
-		DbxRequestConfig config = new DbxRequestConfig("JavaTutorial/1.0",Locale.getDefault().toString());
-		DbxWebAuthNoRedirect webAuth = new DbxWebAuthNoRedirect(config, appInfo);
-		
 		String fullpath="";
 		
-		// Have the user sign in and authorize your app.
-		String authorizeUrl = webAuth.start();
-//		System.out.println("1. Go to: " + authorizeUrl);
-//		System.out.println("2. Click \"Allow\" (you might have to log in first)");
-//		System.out.println("3. Copy the authorization code.");
 		try
 		{
-//			String code = new BufferedReader(new InputStreamReader(System.in)).readLine().trim();
-	
-			// This will fail if the user enters an invalid authorization code.
-			//  DbxAuthFinish authFinish = webAuth.finish(code);
-			//String accessToken = authFinish.accessToken;
-			String accessToken = tokenacc;
-	
-			DbxClient client = new DbxClient(config, accessToken);
-	
-			System.out.println("Linked account: " + client.getAccountInfo().displayName);
-	
 			DbxEntry.WithChildren listing = client.getMetadataWithChildren("/udoocamera/"+boxdir);
 			
 			for (int i = 0; i < listOfFiles.length; i++) 
